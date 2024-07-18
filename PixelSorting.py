@@ -10,8 +10,11 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 
 image_path = 'balloons.jpg'
-#parameter_list = [{"sorting": "rows", "criteria": "rgb_mean", "filter": {"range": [0,256]}, "selection": "rgb"}]
-parameter_list = [{"sorting": "rows", "criteria": "rgb_median", "filter": {"range": [0,256]}, "selection": "rgb"}]
+parameter_list = [{"sorting": "rows", "criteria": "rgb_median", "filter": {"range": [0,256]}, "selection": "r"}, 
+                  {"sorting": "rows", "criteria": "rgb_mean", "filter": {"range": [0,256]}, "selection": "g"}, 
+                  {"sorting": "rows", "criteria": "", "filter": {}, "selection": "b"}]
+parameter_list = [{"sorting": "rows", "criteria": "rgb_mean", "filter": {"range": [10,206]}, "selection": "rgb"},
+                  {"sorting": "rows", "criteria": "", "filter": {"range": [206,256]}, "selection": "rgb"},]
 
 
 def sort_pixels(pixels, criteria=None, selection=None):
@@ -19,6 +22,8 @@ def sort_pixels(pixels, criteria=None, selection=None):
         sorting_criteria = np.mean(pixels, axis=1)
     elif criteria == "rgb_median":
         sorting_criteria = np.median(pixels, axis=1)
+    else:
+        sorting_criteria = np.arange(0, pixels.shape[0])
 
     selected = np.zeros(pixels.shape)
     if "r" in selection:
