@@ -120,12 +120,15 @@ show_img(output_image)
 
 """
 Selection options
-- Rows (sort each line, left to right)
-- Colums (sort each column, top to bottom)
+Completed - Rows (sort each line, left to right)
+- Add an option to filter out whole rows based on parameters (like, average value of the row)
+- Columns (sort each column, top to bottom)
+- Add an option to filter out whole columns based on parameters (like, average value of the row)
 - Diagonal (sort each diagonal)
+- Add an option to filter out whole diagonals based on parameters (like, average value of the row)
 - Left to right, top to bottom, restart at the beginning of the next line (scan lines)
 - Left to right, top to bottom, continue at the end of the next line (zig zag)
-- Diagonal, sort all pixels from the corner out
+- Diagonal, sort all pixels from the corner out, Cantor style
 - Spiral inwards (square, or circle)
 - Spiral outwards (square, or circle)
 - Rotated 0, 90, 180, 270
