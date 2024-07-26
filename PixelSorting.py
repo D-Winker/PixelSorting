@@ -138,6 +138,8 @@ Completed - Rows (sort each line, left to right)
 - Low pass filter
 - Square
 
+Add an option to operate on contiguous segments, rather than everything in the selection
+
 Sorting Criteria
 - RGB Mean
 - RGB Median
@@ -156,4 +158,6 @@ Selectable Parameters
 Selection Options
 - Range (min, max)
 - Contrast
+
+Allow multiple sorts - maybe sort vertically, then horizontally, and so on.
 """
