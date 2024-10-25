@@ -2,16 +2,18 @@
 #
 # A project to play around with pixel sorting.
 #
-# Daniel Winker, July 25, 2024
+# Daniel Winker, October 25, 2024
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
 image_path = 'balloons.jpg'
-parameter_list = [{"selection": "rows", "criteria": "rgb_mean", "filter": {"range": [25,225]}, "channels": "rgb"},
-                  {"selection": "rows", "criteria": "", "filter": {"range": [0,25]}, "channels": "rgb"},
-                  {"selection": "rows", "criteria": "", "filter": {"range": [225,256]}, "channels": "rgb"}]
+parameter_list = [{"selection": "rows", "criteria": "rgb_mean", "filter": {"range": [20,250]}, "channels": "rgb", "segment": True},
+                  {"selection": "rows", "criteria": "", "filter": {"range": [0,25]}, "channels": "rgb", "segment": True},
+                  {"selection": "rows", "criteria": "", "filter": {"range": [225,256]}, "channels": "rgb", "segment": True}]
+
+# "segment": locally sort each contiguous set of filtered pixels, rather than sort across all filtered pixels
 
 # If there are multiple sets of parameters, so multiple outputs, how should they be merged?
 # Only pixels that pass through the chosen filter will be merged; others will "pass through" unaffected
@@ -56,6 +58,28 @@ def sort_pixels(_values, _keys, _reverse=False):
     return _values
 
 
+def get_contiguous_indices(_filter):
+    # Find indices where value changes (from False to True or True to False)
+    change_indices = np.flatnonzero(np.diff(_filter.astype(int)))
+
+    # Initialize empty list to store the results
+    contiguous_segments = []
+
+    # If the array starts with True, add (0, first change)
+    if _filter[0]:
+        change_indices = np.r_[-1, change_indices]  # prepend -1 if starting with True
+
+    # Iterate over change points to collect indices of True blocks
+    for start, end in zip(change_indices[::2], change_indices[1::2]):
+        contiguous_segments.append((start + 1, end + 1))
+
+    # If the array ends with True, add the last block
+    if _filter[-1]:
+        contiguous_segments.append((change_indices[-1] + 1, len(_filter)))
+        
+    return contiguous_segments
+
+
 image = Image.open(image_path)
 
 # Convert the image to a numpy array
@@ -91,8 +115,20 @@ for parameters in parameter_list:
             for index, channel in enumerate(["r", "g", "b"]):
                 if channel in parameters["channels"]:
                     filter = get_filter(_values=px_in[:,index], _filter=parameters["filter"])
-                    temp_mask[row, :, index] = filter
-                    temp_image[row, filter, index] = sort_pixels(_values=px_in[filter,index], _keys=sorting_keys[filter])
+                            
+                    if parameters["segment"]:  
+                        # Rather than sort the whole filtered selection together, sort each contiguous segment separately
+                        filter_segment_indices = get_contiguous_indices(filter)
+
+                        for filtered_segment in filter_segment_indices:
+                            temp_filter = np.full(filter.shape, False)
+                            temp_filter[filtered_segment[0]:filtered_segment[1]] = True
+                            temp_mask[row, filtered_segment[0]:filtered_segment[1], index] = True
+                            temp_image[row, temp_filter, index] = sort_pixels(_values=px_in[temp_filter,index], _keys=sorting_keys[temp_filter])
+
+                    else:
+                        temp_mask[row, :, index] = filter
+                        temp_image[row, filter, index] = sort_pixels(_values=px_in[filter,index], _keys=sorting_keys[filter])
 
     mask_list.append(temp_mask)
     output_list.append(temp_image)
